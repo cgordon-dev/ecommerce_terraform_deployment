@@ -6,7 +6,7 @@ set -e
 #set variables
 REPO_URL="https://github.com/cgordon-dev/ecommerce_terraform_deployment.git"
 PROJECT_DIR="/home/ubuntu/ecommerce_terraform_deployment/frontend"
-BACKEND_PRIVATE_IP="<backend_private_ip>"
+BACKEND_PRIVATE_IP="${private_ip}"
 
 
 # Update and install Node.js and npm
