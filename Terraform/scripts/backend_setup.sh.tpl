@@ -15,7 +15,7 @@ echo "${public_key}" >> ~/.ssh/authorized_keys
 sudo apt update && sudo apt upgrade -y
 
 
-# Install necessary packages as root
+# Install necessary packages
 sudo apt-get update -y
 sudo apt-get install -y wget
 
