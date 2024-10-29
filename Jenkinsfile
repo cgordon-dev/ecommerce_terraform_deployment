@@ -1,49 +1,61 @@
 pipeline {
   agent any
-   stages {
-    stage ('Build') {
+  stages {
+    stage('Init') {  // Moved to the top for better flow
       steps {
-        sh '''#!/bin/bash
-        <code to build the application>
-        '''
-     }
-   }
-    stage ('Test') {
-      steps {
-        sh '''#!/bin/bash
-        <code to activate virtual environment>
-        pip install pytest-django
-        python backend/manage.py makemigrations
-        python backend/manage.py migrate
-        pytest backend/account/tests.py --verbose --junit-xml test-reports/results.xml
-        ''' 
-      }
-    }
-   
-     stage('Init') {
-       steps {
-          dir('Terraform') {
-            sh 'terraform init' 
-            }
+        dir('Terraform') {
+          sh 'terraform init' 
         }
-      } 
-     
-      stage('Plan') {
-        steps {
-          withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'), 
-                        string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-                            dir('Terraform') {
-                              sh 'terraform plan -out plan.tfplan -var="aws_access_key=${aws_access_key}" -var="aws_secret_key=${aws_secret_key}"' 
-                            }
-          }
-        }     
       }
-      stage('Apply') {
-        steps {
-            dir('Terraform') {
-                sh 'terraform apply plan.tfplan' 
-                }
-        }  
-      }       
     }
+    stage('Build') {
+      steps {
+        dir('backend') {
+          sh '''#!/bin/bash
+          python3.9 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          '''
+        }
+      }
+    }
+    stage('Test') {
+      steps {
+        dir('backend') {
+          sh '''#!/bin/bash
+          if [ -d "venv" ]; then
+            source venv/bin/activate
+            export PYTHONPATH=$(pwd)
+            pip install pytest-django
+            python manage.py makemigrations
+            python manage.py migrate
+            pytest account/tests/*.py --verbose --junit-xml test-reports/results.xml
+          else
+            echo "Virtual environment not found!"
+            exit 1
+          fi
+          ''' 
+        }
+      }
+    }
+    stage('Plan') {
+      steps {
+        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'), 
+                          string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                          string(credentialsId: 'RDS_PASSWORD', variable: 'db_password')]) {
+          dir('Terraform') {
+            sh 'terraform plan -out plan.tfplan -var="aws_access_key=${AWS_ACCESS_KEY_ID}" -var="aws_secret_key=${AWS_SECRET_ACCESS_KEY}" -var="db_password=${db_password}" -var="region=<region_name>"' 
+          }
+        }
+      }     
+    }
+    stage('Apply') {
+      steps {
+        dir('Terraform') {
+          sh 'terraform apply -auto-approve plan.tfplan' 
+        }
+      }  
+    }       
   }
+}
