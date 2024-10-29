@@ -15,6 +15,7 @@ echo "${public_key}" >> ~/.ssh/authorized_keys
 sudo apt update && sudo apt upgrade -y
 
 
+echo "Installing Prometheus Node Exporter..."
 # Install necessary packages
 sudo apt-get update -y
 sudo apt-get install -y wget
@@ -42,6 +43,9 @@ EOL
 sudo systemctl daemon-reload
 sudo systemctl start node_exporter
 sudo systemctl enable node_exporter
+
+echo "Prometheus Node Exporter successfully installed!"
+
 
 
 #install python 3.9 & packages
