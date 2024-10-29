@@ -1,10 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 #Terraform
 Terraform/variables.auto.tfvars
 Terraform/.terraform/*
 Terraform/.terraform.lock.hcl
 Terraform/terraform.tfstate.terraform/
 =======
+=======
+>>>>>>> f1b7bdc102bc7a0e5ac1d2c7b0f85ea66519639c
 # Local .terraform directories
 **/.terraform/*
 
@@ -42,4 +45,7 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+<<<<<<< HEAD
+>>>>>>> f1b7bdc102bc7a0e5ac1d2c7b0f85ea66519639c
+=======
 >>>>>>> f1b7bdc102bc7a0e5ac1d2c7b0f85ea66519639c
