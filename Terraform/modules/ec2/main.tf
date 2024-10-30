@@ -171,7 +171,6 @@ resource "tls_private_key" "ssh_key" {
 
 resource "aws_key_pair" "ssh_key_pair" {
   key_name   = "wkld5-key"
-<<<<<<< HEAD
   public_key = tls_private_key.ssh_key.public_key_openssh 
 }
 
@@ -179,9 +178,6 @@ resource "aws_key_pair" "ssh_key_pair" {
 resource "local_file" "save_private_key" {
   content  = tls_private_key.ssh_key.private_key_pem
   filename = "/tmp/terraform_ssh_key.pem" # Temporary file
-=======
-  public_key = tls_private_key.ssh_key.public_key_openssh  
->>>>>>> 8419bf05ae11dd4200641e9415d9569189492500
 }
 
 
