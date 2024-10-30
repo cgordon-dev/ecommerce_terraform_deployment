@@ -5,7 +5,12 @@ resource "aws_instance" "backend" {
   subnet_id         = element(var.private_subnet_ids, count.index)
   vpc_security_group_ids = [aws_security_group.backend_sg.id]
   key_name          = aws_key_pair.ssh_key_pair.key_name
-  user_data         = templatefile("./scripts/backend_setup.sh.tpl",{ public_key = var.public_key, db_password = var.db_password, rds_endpoint = var.rds_endpoint})
+  user_data         = templatefile("${path.root}/scripts/backend_setup.sh",{
+    public_key = var.public_key,
+    db_name = var.db_name
+    db_username = var.db_username
+    db_password = var.db_password,
+    rds_endpoint = var.rds_endpoint})
 
 
 
@@ -18,6 +23,11 @@ resource "aws_instance" "backend" {
   tags = {
     Name = "ecommerce_backend_az${count.index + 1}"
   }
+
+  # Depends on RDS Instance to be created.
+  depends_on = [var.rds_db]
+
+
 }
 
 
@@ -29,7 +39,7 @@ resource "aws_instance" "frontend" {
   subnet_id         = element(var.public_subnet_ids, count.index)
   vpc_security_group_ids = [aws_security_group.frontend_sg.id]
   key_name          = aws_key_pair.ssh_key_pair.key_name
-  user_data         = templatefile("./scripts/frontend_setup.sh.tpl", {
+  user_data         = templatefile("${path.root}/scripts/frontend_setup.sh", {
      public_key = var.public_key,
      BACKEND_PRIVATE_IP = aws_instance.backend[count.index].private_ip, 
      private_ip = aws_instance.backend[count.index].private_ip})
@@ -43,8 +53,9 @@ resource "aws_instance" "frontend" {
     Name = "ecommerce_frontend_az${count.index + 1}"
   }
 
-/*   # Ensure frontend instances depend on the backend instances being created
-  depends_on = [aws_instance.backend] */
+# Ensure frontend instances depend on the backend instances being created
+  depends_on = [aws_instance.backend]
+
 }
 
 
@@ -160,9 +171,14 @@ resource "tls_private_key" "ssh_key" {
 
 resource "aws_key_pair" "ssh_key_pair" {
   key_name   = "wkld5-key"
-  public_key = tls_private_key.ssh_key.public_key_openssh  # Use the appropriate string attribute
+  public_key = tls_private_key.ssh_key.public_key_openssh 
 }
 
+# Saving private key as local tmp file on Jenkins server.
+resource "local_file" "save_private_key" {
+  content  = tls_private_key.ssh_key.private_key_pem
+  filename = "/tmp/terraform_ssh_key.pem" # Temporary file
+}
 
 
 

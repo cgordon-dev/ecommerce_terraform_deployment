@@ -26,7 +26,17 @@ variable "public_key" {
   type        = string
 }
 
+variable "rds_db" {
+
+}
+
 variable "rds_endpoint" {
+}
+
+variable "db_name" {
+}
+
+variable "db_username" {
 }
 
 variable "db_password" {

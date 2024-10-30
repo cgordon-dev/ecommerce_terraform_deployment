@@ -25,11 +25,12 @@ module "ec2" {
   private_subnet_ids = module.vpc.private_subnet_ids
   instance_type = var.instance_type
   ami_id        = var.ami_id
+  rds_db = module.rds.rds_db
   rds_endpoint = module.rds.rds_endpoint
   public_key = file("./scripts/public_key.txt")
+  db_name = module.rds.db_name
+  db_username = module.rds.db_username
   db_password = var.db_password
-
-
 }
 
 # RDS Module
