@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-*7!!kc@bmtx8ngui6lr@xmifmcwm6y%hnbe)rdei(b!ds8t)uq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [] # add the private ip of where you've placed this Django app
+ALLOWED_HOSTS = ['10.0.2.240'] # add the private ip of where you've placed this Django app
 
 
 # Application definition
@@ -88,7 +88,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ecommercedb',
         'USER': 'kurac5user',
+<<<<<<< HEAD
         'PASSWORD': '${db_password}',
+=======
+        'PASSWORD': 'kurac5password',
+>>>>>>> 8419bf05ae11dd4200641e9415d9569189492500
         'HOST': 'ecommerce-db.cvc8oy46ekbu.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
     }, 
