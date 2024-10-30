@@ -60,13 +60,14 @@ echo "Node Exporter installation complete. It's accessible at http://$(curl -s h
 
 # Update and install Node.js and npm
 echo "Updating system and installing Node.js..."
-sudo apt update && sudo apt upgrade
+sudo apt update 
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt install -y nodejs git
 
 # Clone the workload repository
 echo "Cloning workload repository..."
-git clone $REPO_URL || { echo "Failed to clone repository."; exit 1;}
+git clone $REPO_URL /home/ubuntu/ecommerce_terraform_deployment/ || { echo "Failed to clone repository."; exit 1;}
+
 echo "Attempting to enter frontend directory..."
 cd $PROJECT_DIR || { echo "Failed to enter directory!"; exit 1;}
 
