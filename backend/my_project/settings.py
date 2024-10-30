@@ -88,11 +88,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ecommercedb',
         'USER': 'kurac5user',
-<<<<<<< HEAD
-        'PASSWORD': '${db_password}',
-=======
         'PASSWORD': 'kurac5password',
->>>>>>> 8419bf05ae11dd4200641e9415d9569189492500
         'HOST': 'ecommerce-db.cvc8oy46ekbu.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
     }, 
