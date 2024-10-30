@@ -33,5 +33,6 @@ variable "private_subnet_ids" {
 }
 
 variable "backend_sg_id" {
+  default = "sg-027a5d17b777fcf27"
   
 }
