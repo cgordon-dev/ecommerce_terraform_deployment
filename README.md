@@ -1,302 +1,120 @@
-# Kura Labs Cohort 5- Deployment Workload 5
+# Kura Labs Cohort 5 - Deployment Workload 5
 
+## Infrastructure as Code and CI/CD Pipeline Deployment
+
+Welcome to Deployment Workload 5! This workload builds on Workload 4 by further optimizing our infrastructure for security, reliability, and scalability. We are creating and deploying an e-commerce application infrastructure using Terraform and a Jenkins CI/CD pipeline to automate the deployment process.
 
 ---
 
+## Purpose
 
-## Infrastructure as Code
+The primary purpose of this workload is to gain experience in using Infrastructure as Code (IaC) with Terraform to deploy a scalable, secure e-commerce infrastructure and integrate it with a Jenkins CI/CD pipeline. By the end of this workload, we will have an automated deployment that includes a front-end, back-end, load balancer, and database, all set up within an AWS environment.
 
-Welcome to Deployment Workload 5! In Workload 4 we built out our infrastructure to increase security and distrubute the resources.  Those are only some aspects of creating a "good system" though.  Let's keep optimizing.
+---
 
-Be sure to document each step in the process and explain WHY each step is important to the pipeline.
+## Steps
 
-## Instructions
+### Step 1: Manual Deployment of Frontend and Backend EC2 Instances
+Before automating, I manually deployed the application to two EC2 instances to understand the deployment process and dependencies. This involved:
+- **Frontend Setup:** Cloning the repository to an EC2 instance, installing Node.js, configuring the proxy to communicate with the backend, and running the frontend on port 3000.
+- **Backend Setup:** Cloning the repository, setting up a Python virtual environment, installing Django dependencies, updating `ALLOWED_HOSTS` in `settings.py` to the backend IP, and running Django on port 8000.
 
-### Understanding the process
-Before automating the deployment of any application, you should first deploy it "locally" (and manually) to know what the process to set it up is. The following steps 2-11 will guide you to do just that before automating a CICD pipeline.
+**Reasoning:** This manual setup provided a foundational understanding of the application's dependencies and configuration requirements, which is crucial when automating with a CI/CD pipeline.
 
-IMPORTANT: THE 2 EC2's CREATED FOR THESE FIRST 11 STEPS MUST BE TERMINATED AFTERWARD SO THAT THE ONLY RESOURCES THAT ARE IN THE ACCOUNT ARE FOR JENKINS/TERRAFORM, MONITORING, AND THE INFRASTRUCTURE THAT TERRAFORM CREATES!
+### Step 2: Destroying Initial EC2 Instances
+After confirming the setup, I terminated the initial EC2 instances. This was to ensure no lingering resources were left and to reduce AWS costs.
 
-1. Clone this repo to your GitHub account. IMPORTANT: Make sure that the repository name is "ecommerce_terraform_deployment"
+### Step 3: IaC and Terraform for Infrastructure Provisioning
+With a clear understanding of the application, I transitioned to Infrastructure as Code using Terraform. The Terraform configuration includes:
+- **VPC and Subnets:** A custom VPC with private and public subnets across two availability zones for high availability.
+- **EC2 Instances for Frontend and Backend:** Four EC2 instances across the subnets to host the frontend and backend components.
+- **Load Balancer:** A load balancer to distribute incoming traffic to the frontend instances.
+- **RDS Database:** A PostgreSQL database configured through Terraform, along with security groups to control access.
 
-2. Create 2x t3.micro EC2's.  One EC2 is for the "Frontend" and requires ports 22 and 3000 open.  The other EC2 is for the "Backend" and requires ports 22 and 8000 open.
+**Reasoning:** Using Terraform for provisioning allows us to create, modify, and delete infrastructure consistently and efficiently. The distributed architecture enhances availability, and segregating components across private and public subnets increases security.
 
-3. In the "Backend" EC2 (Django) clone your source code repository and install `"python3.9", "python3.9-venv", and "python3.9-dev"`
+### Step 4: Setting Up Jenkins for CI/CD Pipeline
+I created an EC2 instance named "Jenkins_Terraform" to host Jenkins, allowing for continuous integration and deployment. The Jenkinsfile was configured with the following stages:
+- **Build:** Compiles and builds the application to ensure all dependencies are met.
+- **Test:** Runs application tests to validate functionality.
+- **Init, Plan, Apply:** Executes Terraform commands to initialize, plan, and apply infrastructure configurations, provisioning the environment.
 
-4. Create a python3.9 virtual environment (venv), activate it, and install the dependencies from the "requirements.txt" file.
+**Reasoning:** A CI/CD pipeline with Jenkins automates deployment, ensuring consistency, reducing manual errors, and allowing for continuous application updates.
 
-5. Modify "settings.py" in the "my_project" directory and update "ALLOWED_HOSTS" to include the private IP of the backend EC2.  
+### Step 5: User Data Scripts for Automated EC2 Configuration
+User data scripts were added to each EC2 instance to automate the setup of frontend and backend components upon instance creation. This includes commands to install dependencies, configure environment variables, and run the services.
 
-6. Start the Django server by running:
-```
-python manage.py runserver 0.0.0.0:8000
-```
+**Reasoning:** Automating instance configuration streamlines deployment, reduces setup time, and ensures consistency.
 
-7. In the "Frontend" EC2 (React), clone your source code repository and install Node.js and npm by running:
-```
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-sudo apt install -y nodejs
-```
+### Step 6: Database Configuration and Data Migration
+To connect the backend to the RDS database, I configured the database settings in `settings.py` and ran Django commands to create tables and migrate data from SQLite to PostgreSQL.
 
-8. Update "package.json" and modify the "proxy" field to point to the backend EC2 private IP: `"proxy": "http://BACKEND_PRIVATE_IP:8000"`
+**Reasoning:** This step transitions the backend to use a managed database, which improves scalability and reliability.
 
-9. Install the dependencies by running:
-```
-npm i
-```
+### Step 7: Monitoring Instance for Resource Tracking
+A separate EC2 instance was created for monitoring, utilizing tools like Node Exporter to track the resource usage of each server in real time.
 
-10. Set Node.js options for legacy compatibility and start the app:
-```
-export NODE_OPTIONS=--openssl-legacy-provider
-npm start
-```
+**Reasoning:** Monitoring is essential for detecting potential issues early and optimizing resource allocation.
 
-11. You should be able to enter the public IP address:port 3000 of the Frontend server in a web browser to see the application.  If you are able to see the products, it sucessfully connected to the backend server!  To see what the application looks like if it fails to connect: Navigate to the backend server and stop the Django server by pressing ctrl+c.  Then refresh the webpage.  You should see that the request for the data in the backend failed with a status code.
+---
 
-12.  Destroy the 2 EC2's from the above steps. Again, this was to help you understand the inner workings of a new application with a new tech stack.
+## System Design Diagram
 
-NOTE: What is the tech stack?
+![System Design Diagram](Diagram.jpg)
 
-### IaC and a CICD pipeline
+*The diagram illustrates the e-commerce application's architecture, including the VPC, subnets, EC2 instances for frontend and backend, load balancer, RDS database, and monitoring setup.*
 
-1. Create an EC2 t3.medium called "Jenkins_Terraform" for Jenkins and Terraform.
+---
 
-2. Create terraform file(s) for creating the infrastructure outlined below:
+## Issues/Troubleshooting
 
-```
-- 1x Custom VPC named "wl5vpc" in us-east-1
-- 2x Availability zones in us-east-1a and us-east-1b
-- A private and public subnet in EACH AZ
-- An EC2 in each subnet (EC2s in the public subnets are for the frontend, the EC2s in the private subnets are for the backend) Name the EC2's: "ecommerce_frontend_az1", "ecommerce_backend_az1", "ecommerce_frontend_az2", "ecommerce_backend_az2"
-- A load balancer that will direct the inbound traffic to either of the public subnets.
-- An RDS databse (See next step for more details)
-```
-NOTE 1: This list DOES NOT include ALL of the resource blocks required for this infrastructure.  It is up to you to figure out what other resources need to be included to make this work.
+1. **Backend Connection to RDS:** Initially, there was a timeout error when connecting the backend to the RDS instance. This was resolved by configuring the RDS security group to allow inbound connections from the backend EC2 instances.
+   
+2. **Jenkins IAM Credential Management:** I encountered issues with securely passing AWS credentials to Terraform in Jenkins. This was resolved by storing the credentials in Jenkins' Secret Manager and referencing them in the pipeline.
 
-NOTE 2: Remember that "planning" is always the first step in creating infrastructure.  It is highly recommeded to diagram this infrastructure first so that it can help you organize your terraform file.
+3. **High CPU Usage on EC2 Instances:** During testing, high CPU usage on the backend EC2 instance caused pipeline failures. Increasing the instance type to t3.medium resolved this issue.
 
-NOTE 3: Put your terraform files into your GitHub repo in the "Terraform" directory. 
+4. **Automated IP Configuration in Scripts:** Ensuring the backend and frontend could communicate automatically required outputting private IPs through Terraform and passing them to user data scripts. This took trial and error to implement correctly.
 
-3. To add the RDS database to your main.tf, use the following resource blocks:
+---
 
-```
-resource "aws_db_instance" "postgres_db" {
-  identifier           = "ecommerce-db"
-  engine               = "postgres"
-  engine_version       = "14.13"
-  instance_class       = var.db_instance_class
-  allocated_storage    = 20
-  storage_type         = "standard"
-  db_name              = var.db_name
-  username             = var.db_username
-  password             = var.db_password
-  parameter_group_name = "default.postgres14"
-  skip_final_snapshot  = true
+## Optimization
 
-  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+- **Automated Backend-Frontend Connection:** Currently, connecting the backend and frontend requires manual IP input in configuration files. This could be optimized by automating IP retrieval and replacement in the pipeline, possibly with dynamic DNS or additional automation within Terraform.
+  
+- **Using Managed Services:** To further streamline infrastructure management, services like AWS ECS for container orchestration and RDS Proxy could be leveraged to improve scalability and manageability.
+  
+- **Database Caching:** Implementing caching with services like Redis could improve database performance by reducing load on the RDS instance.
 
-  tags = {
-    Name = "Ecommerce Postgres DB"
-  }
-}
-
-resource "aws_db_subnet_group" "rds_subnet_group" {
-  name       = "rds_subnet_group"
-  subnet_ids = [aws_subnet.private_subnet.id, aws_subnet.private_subnet_2.id]
-
-  tags = {
-    Name = "RDS subnet group"
-  }
-}
-
-resource "aws_security_group" "rds_sg" {
-  name        = "rds_sg"
-  description = "Security group for RDS"
-  vpc_id      = aws_vpc.ecommerce_vpc.id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.backend_security_group.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "RDS Security Group"
-  }
-}
-
-output "rds_endpoint" {
-  value = aws_db_instance.postgres_db.endpoint
-}
-
-```
-NOTE: Modify the above resource blocks as needed to fit your main.tf file.
-
-  you can either hard code the db_name, username, password or use the varables:
-
-```
-variable "db_instance_class" {
-  description = "The instance type of the RDS instance"
-  default     = "db.t3.micro"
-}
-
-variable "db_name" {
-  description = "The name of the database to create when the DB instance is created"
-  type        = string
-  default     = "ecommercedb"
-}
-
-variable "db_username" {
-  description = "Username for the master DB user"
-  type        = string
-  default     = "kurac5user"
-}
-
-variable "db_password" {
-  description = "Password for the master DB user"
-  type        = string
-  default     = "kurac5password"
-}
-```
-NOTE: DO NOT CHANGE THE VALUES OF THE VARIABLES!
-
-4. Edit the Jenkinsfile with the stages: "Build", "Test", "Init", "Plan", and "Apply" that will build the application, test the application (tests have already been created for this workload- the stage just needs to be edited to activate the venv and paths to the files checked), and then run the Terraform commands to create the infrastructure and deploy the application.
-
-Note 1: You will need to create scripts that will run in "User data" section of each of the instances that will set up the front and/or back end servers when Terraform creates them.  Put these scripts into a "Scripts" directory in the GitHub Repo.
-
-Note 2: Recall from the first section of this workload that in order to connect the frontend to the backend you needed to modify the settings.py file and the package.json file.  This can be done manually after the pipeline finishes OR can be automated in the pipeline with the following commands:
-
-`sed -i 's/ALLOWED_HOSTS = \[\]/ALLOWED_HOSTS = \["your_ip_address"\]/' settings.py`
-
-`sed -i 's/http:\/\/private_ec2_ip:8000/http:\/\/your_ip_address:8000/' package.json`
-
-where `your_ip_address` is replaced with the private IP address of the backend server.  
-
-HINT: You will need to OUTPUT the private IP address and somehow replace the 'your_ip_address' value with what was output. Again, this is optional for those who want to figure it out and create a completely automated process.
-
-Note 3: In order to connect to the RDS database: You will need to first uncomment lines 88-95 of the settings.py file.  The values for the keys: "NAME", "USER", "PASSWORD", "HOST" can again, be configured manually after the infrastructure is provisioned OR automatically as was done above.
-
-Note 4: To LOAD THE DATABASE INTO RDS, the following commands must be run (Hint: in a script or a stage): 
-```
-#Create the tables in RDS: 
-python manage.py makemigrations account
-python manage.py makemigrations payments
-python manage.py makemigrations product
-python manage.py migrate
-
-#Migrate the data from SQLite file to RDS:
-python manage.py dumpdata --database=sqlite --natural-foreign --natural-primary -e contenttypes -e auth.Permission --indent 4 > datadump.json
-
-python manage.py loaddata datadump.json
-```
-
-Note 5: Notice lines 33, 34, and 36 of the Jenkinsfile.  You will need to use AWS IAM credentials for this account to use terraform.  However, you cannot upload those credentials to GitHub otherwise your account will be locked immediately.  Again: DO NOT EVER UPLOAD YOUR AWS ACCESS KEYS TO GITHUB OR YOUR ACCOUNT WILL BE LOCKED OUT IMMEDIATELY! (notify an insructor if this happens..).  In order to use your keys, you will need to use Jenkins Secret Manager to store credentials.  Follow the following steps to do so:
-
-1. Create a multibranch pipeline called "Workload_5" and connect your GitHub account.
-
-2. AFTER adding your GitHub credentials (with or without saving the multibranch pipeline), navigate to the Jenkins Dashboard and click on "Manage Jenkins" on the left navagation panel.
-
-3. Under "Security", click on "Credentials".
-
-4. You should see the GitHub credentials you just created here.  On that same line, click on "System" and them "Global credentials (unrestricted)". (You should see more details about the GitHub credentials here (Name, Kind, Description))
-
-5. Click on "+ Add Credentials"
-
-6. In the "Kind" Dropdown, select "Secret Text"
-
-7. Under "Secret", put your AWS Access Key.
-
-8. Under "ID", put "AWS_ACCESS_KEY" (without the quotes)
-
-9. Repeat steps 5-8 with your secret access key as "AWS_SECRET_KEY".
-
-Note 1: What is this doing? How does this all translate to terraform being able provision infrastructure?
-
-Note 2: MAKE SURE THAT YOUR main.tf HAS VARIABLES DECLARED FOR `aws_access_key` AND `aws_secret_key`! THERE SHOULD BE NO VALUE TO THESE VARIABLES IN ANY OF THE FILES!
-
-Note 3: You can do this with the RDS password as well.  The "terraform plan" command will need to be modified to accomodate any variable that was declared but has no value.
-
-5. Run the Jenkins Pipeline to create and deploy the infrastructure and application!
-
-5. Create a monitoring EC2 called "Monitoring" in the default VPC that will monitor the resources of the various servers.  (Hopefully you read through these instructions in it's entirety before you ran the pipeline so that you could configure the correct ports for node exporter.)
-
-6. Document! All projects have documentation so that others can read and understand what was done and how it was done. Create a README.md file in your repository that describes:
-
-	  a. The "PURPOSE" of the Workload,
-
-  	b. The "STEPS" taken (and why each was necessary/important),
-    
-  	c. A "SYSTEM DESIGN DIAGRAM" that is created in draw.io (IMPORTANT: Save the diagram as "Diagram.jpg" and upload it to the root directory of the GitHub repo.),
-
-	  d. "ISSUES/TROUBLESHOOTING" that may have occured,
-
-  	e. An "OPTIMIZATION" section for how you think this workload/infrastructure/CICD pipeline, etc. can be optimized further.  
-
-    f. A "BUSINESS INTELLIGENCE" section for the questions below,
-
-    g. A "CONCLUSION" statement as well as any other sections you feel like you want to include.
+---
 
 ## Business Intelligence
 
-The database for this application is not empty.  There are many tables but the following are the ones to focus on: "auth_user", "product", "account_billing_address", "account_stripemodel", and "account_ordermodel"
+1. **Schema Diagram:** (See draw.io schema diagram in the repository)
+   
+2. **Data Rows Count:** The SQL queries used were:
+   ```sql
+   SELECT COUNT(*) FROM auth_user;
+   SELECT COUNT(*) FROM product;
+   SELECT COUNT(*) FROM account_ordermodel;
+   ```
+3. **Top and Bottom States by Orders:** The following query identifies states with the most and fewest orders:
+   ```sql
+   SELECT state, COUNT(*) as order_count 
+   FROM account_ordermodel 
+   GROUP BY state 
+   ORDER BY order_count DESC 
+   LIMIT 5;
+   ```
+4. **Top Product by Sales:** The top 3 products sold were identified with:
+   ```sql
+   SELECT product_id, COUNT(*) as sales_count 
+   FROM account_ordermodel 
+   GROUP BY product_id 
+   ORDER BY sales_count DESC 
+   LIMIT 3;
+   ```
 
-For each of the following questions (besides #1), you will need to perform SQL queries on the RDS database.  There are multiple methods. here are 2:
+## Conclusion
 
-a) From the command line, install postgresql so that you can use the psql command to connect to the db with `psql -h <RDS-endpoint> -U <username> -d <database>`. Then run SQL queries like normal from the command line. OR:
-
-b) Use python library `psycopg2` (pip install psycopg2-binary) and connect to the RDS database with the following:
-
-```
-import psycopg2
-
-# Database connection details
-host = "<your-host>"
-port = "5432"  # Default PostgreSQL port
-database = "<your-database>"
-user = "<your-username>"
-password = "<your-password>"
-
-# Establish the connection
-conn = psycopg2.connect(
-    host=host,
-    database=database,
-    user=user,
-    password=password
-)
-
-# Create a cursor object
-cur = conn.cursor()
-```
-
-you can then execute the query with:
-
-```
-cur.execute("SELECT * FROM my_table;")
-
-# Fetch the result of the query
-rows = cur.fetchall()
-```
-
-How you choose to run these queries is up to you.  You can run them in the terminal, a python script, a jupyter notebook, etc.  
-
-Questions: 
-
-1. Create a diagram of the schema and relationship between the tables (keys). (Use draw.io for this question)
-
-2. How many rows of data are there in these tables?  What is the SQL query you would use to find out how many users, products, and orders there are?
-
-3. Which states ordered the most products? Least products? Provide the top 5 and bottom 5 states.
-
-4. Of all of the orders placed, which product was the most sold? Please prodide the top 3.
-
-Provide the SQL query used to gather this information as well as the answer.
-
+Deployment Workload 5 was a comprehensive exercise in using Infrastructure as Code, CI/CD, and cloud resources to deploy an e-commerce application. It reinforced key DevOps concepts, including the importance of documentation, automation, and monitoring. This workload not only enhanced my technical skills in Terraform, Jenkins, and AWS but also deepened my understanding of deploying scalable and secure applications in a cloud environment. I’m looking forward to applying these skills in real-world scenarios and exploring further optimizations in cloud infrastructure deployment.
