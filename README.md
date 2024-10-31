@@ -62,48 +62,60 @@ A separate EC2 instance was created for monitoring, utilizing tools like Node Ex
 
 ![System Design Diagram](Diagram.jpg)
 
-This architecture diagram illustrates a multi-tiered deployment setup on AWS, integrating CI/CD, monitoring, and both frontend and backend environments. Here’s a step-by-step breakdown of each component and their interconnections:
+# Multi-Tiered AWS Deployment Architecture
 
-	1.	Engineer & GitHub Integration:
-	•	The diagram starts with the engineer, who pushes code to a GitHub repository.
-	•	This codebase is the source for the CI/CD pipeline, triggering automated build and deployment workflows.
-	2.	CI/CD Pipeline (Jenkins/Terraform on EC2):
-	•	A Jenkins server (m5.medium instance) is set up in a public subnet within the AWS environment.
-	•	Terraform, running on this Jenkins instance, manages the infrastructure deployment, provisioning necessary resources like VPCs, subnets, security groups, and EC2 instances.
-	•	Jenkins listens for changes in the GitHub repository and, upon detecting updates, initiates build and deployment jobs. This CI/CD setup ensures continuous integration of new code and automated deployment across different environments.
-	3.	VPC (Virtual Private Cloud) and Subnets:
-	•	The deployment is organized within a VPC, segmented into multiple availability zones (e.g., us-east-1a, us-east-1b).
-	•	Each availability zone contains both public and private subnets, enabling efficient distribution of resources and improved fault tolerance.
-	4.	Public and Private Subnet Segmentation:
-	•	Public Subnet: Contains resources that require internet access, such as frontend servers and Jenkins. These instances are exposed via public IP addresses and have security groups configured for HTTP, HTTPS, and SSH access.
-	•	Private Subnet: Hosts the backend services (e.g., Django and database). These instances have restricted access, only reachable within the VPC or through specific allowed IPs, enhancing security.
-	5.	Frontend Deployment (React on Node):
-	•	Two frontend servers, each in separate availability zones, run a React application on Node.js.
-	•	These frontend servers are configured within the public subnets to be accessible to end-users.
-	•	Load balancing between these frontend instances ensures high availability, distributing incoming traffic evenly.
-	6.	Backend Deployment (Django on Node):
-	•	In each availability zone, there is a backend server running a Django application, deployed on Node.
-	•	These instances are within private subnets, accessible only to the frontend servers and other approved components in the VPC.
-	•	The backend environment includes database connectivity and other business logic, isolated from direct internet access for security.
-	7.	Database (RDS):
-	•	The backend servers connect to a managed RDS (Relational Database Service) instance located in a private subnet.
-	•	The RDS instance is isolated within the VPC, ensuring that only authorized resources within the VPC can access the database.
-	•	Security groups for RDS allow connections on the appropriate database port (e.g., 5432 for PostgreSQL) from the backend instances.
-	8.	Monitoring (Grafana on EC2):
-	•	A dedicated monitoring server runs Grafana, hosted in a public subnet for accessibility.
-	•	Grafana collects metrics from all application components, providing dashboards for monitoring resource usage, performance, and health.
-	•	Security groups restrict Grafana’s access, allowing only specific IPs or VPC resources to interact with it, ensuring data is protected.
-	9.	Internet Gateway & Route Tables:
-	•	An Internet Gateway (IGW) is attached to the VPC, providing internet connectivity to resources in the public subnets.
-	•	Route tables are configured for both public and private subnets:
-	•	Public route tables direct traffic destined for the internet through the IGW.
-	•	Private route tables manage internal traffic, allowing backend instances to communicate with the frontend and RDS securely.
-	10.	Security Groups:
-	•	Each component (Jenkins, frontend, backend, RDS, Grafana) has a dedicated security group defining inbound and outbound traffic rules.
-	•	These rules enforce strict access control, ensuring only the required services and instances can communicate, enhancing overall security.
-	11.	Load Balancing & Failover:
-	•	The setup likely includes a load balancer (though not directly illustrated here) to manage traffic across frontend instances.
-	•	Multi-AZ deployment of frontend and backend instances provides redundancy, automatically failing over to another zone in case of an instance or zone failure.
+This document provides a detailed step-by-step breakdown of a multi-tiered deployment architecture on AWS. This setup integrates CI/CD, monitoring, and both frontend and backend environments.
+
+## 1. Engineer & GitHub Integration
+- The process starts with the **engineer** pushing code to a **GitHub** repository.
+- The GitHub repository serves as the source for the CI/CD pipeline, triggering automated build and deployment workflows.
+
+## 2. CI/CD Pipeline (Jenkins/Terraform on EC2)
+- A **Jenkins server** (m5.medium instance) is set up in a public subnet within the AWS environment.
+- **Terraform** runs on this Jenkins instance to manage infrastructure deployment, provisioning resources like VPCs, subnets, security groups, and EC2 instances.
+- Jenkins listens for changes in the GitHub repository and, upon detecting updates, initiates build and deployment jobs. This CI/CD setup ensures continuous integration of new code and automated deployment across environments.
+
+## 3. VPC (Virtual Private Cloud) and Subnets
+- The deployment is organized within a **VPC**, segmented into multiple availability zones (e.g., `us-east-1a`, `us-east-1b`).
+- Each availability zone contains both **public** and **private subnets**, enabling efficient distribution of resources and improved fault tolerance.
+
+## 4. Public and Private Subnet Segmentation
+- **Public Subnet**: Contains resources that require internet access, such as frontend servers and Jenkins. These instances are exposed via public IP addresses and have security groups configured for HTTP, HTTPS, and SSH access.
+- **Private Subnet**: Hosts the backend services (e.g., Django and database). These instances have restricted access, only reachable within the VPC or through specific allowed IPs, enhancing security.
+
+## 5. Frontend Deployment (React on Node)
+- Two **frontend servers**, each in separate availability zones, run a **React** application on **Node.js**.
+- These frontend servers are configured within the public subnets to be accessible to end-users.
+- **Load balancing** between these frontend instances ensures high availability, distributing incoming traffic evenly.
+
+## 6. Backend Deployment (Django on Node)
+- In each availability zone, there is a **backend server** running a **Django** application, deployed on Node.
+- These instances are within private subnets, accessible only to the frontend servers and other approved components in the VPC.
+- The backend environment includes database connectivity and other business logic, isolated from direct internet access for security.
+
+## 7. Database (RDS)
+- The backend servers connect to a managed **RDS** (Relational Database Service) instance located in a private subnet.
+- The RDS instance is isolated within the VPC, ensuring that only authorized resources within the VPC can access the database.
+- Security groups for RDS allow connections on the appropriate database port (e.g., 5432 for PostgreSQL) from the backend instances.
+
+## 8. Monitoring (Grafana on EC2)
+- A dedicated monitoring server runs **Grafana**, hosted in a public subnet for accessibility.
+- Grafana collects metrics from all application components, providing dashboards for monitoring resource usage, performance, and health.
+- Security groups restrict Grafana’s access, allowing only specific IPs or VPC resources to interact with it, ensuring data is protected.
+
+## 9. Internet Gateway & Route Tables
+- An **Internet Gateway (IGW)** is attached to the VPC, providing internet connectivity to resources in the public subnets.
+- **Route tables** are configured for both public and private subnets:
+  - Public route tables direct traffic destined for the internet through the IGW.
+  - Private route tables manage internal traffic, allowing backend instances to communicate with the frontend and RDS securely.
+
+## 10. Security Groups
+- Each component (**Jenkins**, **frontend**, **backend**, **RDS**, **Grafana**) has a dedicated **security group** defining inbound and outbound traffic rules.
+- These rules enforce strict access control, ensuring only the required services and instances can communicate, enhancing overall security.
+
+## 11. Load Balancing & Failover
+- The setup likely includes a **load balancer** (though not directly illustrated here) to manage traffic across frontend instances.
+- **Multi-AZ deployment** of frontend and backend instances provides redundancy, automatically failing over to another zone in case of an instance or zone failure.
 
 This architecture ensures a robust, secure, and scalable deployment on AWS, allowing for efficient CI/CD processes, monitored performance, and resilient frontend and backend services. Each component is isolated, yet interlinked for seamless communication within the VPC, maintaining security and high availability.
 
