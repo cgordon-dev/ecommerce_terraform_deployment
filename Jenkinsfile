@@ -20,19 +20,6 @@ pipeline {
         }
       }
     }
-    stage('Debug') {
-      steps {
-        dir('backend') {
-          sh '''#!/bin/bash
-          echo "DEBUG: Checking environment variables and DB connectivity"
-          echo "Database Host: $DB_HOST"
-          echo "Database User: $DB_USER"
-          echo "Database Name: $DB_NAME"
-          telnet $DB_HOST 5432
-          '''
-        }
-      }
-    }
     stage('Test') {
       steps {
         dir('backend') {

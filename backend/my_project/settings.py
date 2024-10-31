@@ -86,10 +86,17 @@ WSGI_APPLICATION = 'my_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
+<<<<<<< HEAD
         'NAME': 'your_db_name',
         'USER': 'your_username',
         'PASSWORD': 'your_password',
         'HOST': 'your-rds-endpoint.amazonaws.com',
+=======
+        'NAME': 'ecommercedb',
+        'USER': 'kurac5user',
+        'PASSWORD': 'kurac5password',
+        'HOST': 'ecommerce-db.cvc8oy46ekbu.us-east-1.rds.amazonaws.com',
+>>>>>>> 9025e1515fb2a37b8f23f46029bd6c053919df8f
         'PORT': '5432',
     }, 
     'sqlite': {
