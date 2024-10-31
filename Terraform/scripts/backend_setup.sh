@@ -60,7 +60,7 @@ echo "Node Exporter installation complete. It's accessible at http://$(curl -s h
 
 ###### SECTION FOR DJANGO APP ###########
 #update apt for the backend instances
-sudo apt update && sudo apt upgrade
+sudo apt update
 
 #install python 3.9 & packages
 sudo add-apt-repository ppa:deadsnakes/ppa
