@@ -180,6 +180,12 @@ resource "local_file" "save_private_key" {
   filename = "/tmp/terraform_ssh_key.pem" # Temporary file
 }
 
+# Saving private key as local tmp file on Jenkins server.
+resource "local_file" "save_public_key" {
+  content  = tls_private_key.ssh_key.public_key_pem
+  filename = "/tmp/terraform_ssh_key.pub" # Temporary file
+}
+
 
 
 

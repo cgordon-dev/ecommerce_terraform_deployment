@@ -34,7 +34,7 @@ resource "aws_route" "public_to_default" {
 
 # Define the routes for the first private route table
 resource "aws_route" "private_to_default" {
-  route_table_id = aws_route_table.private_route_table.id  # Replace with private route table ID for private subnet 1
+  route_table_id = aws_route_table.private_route_table.id  # Replace with private route table ID
   destination_cidr_block = data.aws_vpc.default_vpc.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.vpc_peering.id
 }
