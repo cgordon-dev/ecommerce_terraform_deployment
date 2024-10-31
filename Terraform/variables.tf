@@ -48,12 +48,12 @@ variable "azs" {
   type        = list(string)
 }
 
-variable "access_key" {
+variable "aws_access_key" {
   sensitive = true
   
 }
 
-variable "secret_key" {
+variable "aws_secret_key" {
   sensitive = true
   
 }
